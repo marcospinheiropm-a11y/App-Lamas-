@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -64,7 +63,7 @@
       background: #fafafa;
       border-radius: 4px;
     }
-    .error { color: var(--accent); font-size: 14px; }
+    .error { color: var(--accent); font-size: 14px; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -107,14 +106,14 @@
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Configuração do Firebase
+    // Configuração Atualizada
     const firebaseConfig = {
-      apiKey: "AIzaSyD-PLACEHOLDER",
+      apiKey: "AIzaSyDJXXWjAZSPHITM2CtKy5jdPj9hk_dotIE",
       authDomain: "controle-lamas.firebaseapp.com",
       projectId: "controle-lamas",
-      storageBucket: "controle-lamas.appspot.com",
-      messagingSenderId: "000000000",
-      appId: "1:000000000:web:000000000"
+      storageBucket: "controle-lamas.firebasestorage.app",
+      messagingSenderId: "415984147364",
+      appId: "1:415984147364:web:b754cbe19ed4591ab6ff31"
     };
 
     const app = initializeApp(firebaseConfig);
