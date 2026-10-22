@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Maturação de Barris Lamas</title>
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Firebase (Versão Compatível para arquivo único) -->
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        /* Estilos Base e Identidade Visual */
+        :root {
+            --bg-color: #faf8f5;
+            --header-bg: #3b2a22;
+            --gold: #c9a06b;
+            --text-dark: #2a1c15;
+            --card-bg: #ffffff;
+        }
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+        }
+        /* Cabeçalho */
+        header {
+            background-color: var(--header-bg);
+            border-bottom: 3px solid var(--gold);
+            padding: 15px 20px;
+            color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .icon-box {
+            background-color: var(--gold);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        h1 {
+            font-family: 'Playfair Display', serif;
+            margin: 0;
+            font-size: 1.2rem;
+            color: #fdfbf7;
+        }
+        .subtitle {
+            color: var(--gold);
+            font-size: 0.8rem;
+            margin-top: 2px;
+        }
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        /* Tela de Login */
+        #login-screen {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            max-width: 400px;
+            margin: 50px auto;
+            text-align: center;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--gold);
+            color: var(--header-bg);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button.secondary {
+            background-color: transparent;
+            border: 1px solid var(--gold);
+            color: var(--header-bg);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cabeçalho -->
+    <header id="main-header" style="display: none;">
+        <div class="header-title">
+            <div class="icon-box">🍷</div>
+            <div>
+                <h1>Controle de Maturação</h1>
+                <div class="subtitle">Operador: Marcos AP • Adega Artesanal</div>
+            </div>
+        </div>
+        <div>
+            <button onclick="logout()" style="width: auto; padding: 8px 12px; font-size: 0.8rem;">Sair</button>
+        </div>
+    </header>
+
+    <!-- Tela de Login -->
+    <div id="login-screen">
+        <h2>Acesso ao Sistema</h2>
+        <p>Faça login ou cadastre-se (O primeiro usuário será Administrador).</p>
+        <input type="email" id="email" placeholder="Seu E-mail">
+        <input type="password" id="password" placeholder="Senha (Mín. 6 dígitos)">
+        <button onclick="login()">Entrar</button>
+        <button class="secondary" onclick="register()">Cadastrar Novo Usuário</button>
+        <p id="login-msg" style="color: red; font-size: 0.9rem;"></p>
+    </div>
+
+    <!-- Tela Principal do App -->
+    <div class="container" id="app-screen" style="display: none;">
+        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); text-align: center;">
+            <h2 style="font-family: 'Playfair Display', serif; color: var(--header-bg);">Bem-vindo ao Controle de Barris</h2>
+            <p>Seu aplicativo está conectado ao banco de dados com sucesso!</p>
+            <p><em>A interface completa de controle de barris carregará aqui...</em></p>
+        </div>
+    </div>
+
+    <script>
+        // 1. INICIALIZAÇÃO DO FIREBASE COM SUA CHAVE
+        const firebaseConfig = {
+            apiKey: "AIzaSyDJXXWjAZSPHITM2CtKy5jdPj9hk_dotIE",
+            authDomain: "controle-lamas.firebaseapp.com",
+            projectId: "controle-lamas",
+            storageBucket: "controle-lamas.firebasestorage.app",
+            messagingSenderId: "415984147364",
+            appId: "1:415984147364:web:b754cbe19ed4591ab6ff31"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Ativar funcionamento offline
+        db.enablePersistence().catch(function(err) {
+            console.log("Erro de persistência offline:", err);
+        });
+
+        // 2. FUNÇÕES DE AUTENTICAÇÃO
+        function showMsg(text) {
+            document.getElementById('login-msg').innerText = text;
+        }
+
+        function register() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            if(pass.length < 6) return showMsg("A senha deve ter no mínimo 6 caracteres.");
+            
+            auth.createUserWithEmailAndPassword(email, pass)
+                .then((userCredential) => {
+                    // Define regra de administrador inicial no banco aqui (simplificado)
+                    db.collection("users").doc(userCredential.user.uid).set({
+                        email: email,
+                        role: "verificando..." // Lógica do servidor definirá Admin se for o primeiro
+                    });
+                })
+                .catch((error) => showMsg("Erro ao cadastrar: " + error.message));
+        }
+
+        function login() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('password').value;
+            auth.signInWithEmailAndPassword(email, pass)
+                .catch((error) => showMsg("Erro ao entrar: " + error.message));
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+
+        // 3. MONITORAMENTO DE LOGIN
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-header').style.display = 'flex';
+                document.getElementById('app-screen').style.display = 'block';
+            } else {
+                document.getElementById('login-screen').style.display = 'block';
+                document.getElementById('main-header').style.display = 'none';
+                document.getElementById('app-screen').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
